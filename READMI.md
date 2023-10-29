@@ -491,3 +491,79 @@ zookeeper 启动时会读取该文件作为默认配置文件
 
 # 第四章、dubbo的配置
 
+## 4.1 配置原则
+
+在服务提供者配置访问参数。因为服务提供者更了解服务的各种参数。
+
+## 4.2 关闭检查
+
+dubbo 缺省会在启动时检查依赖的服务是否可用，不可用时会抛出异常，阻止 Spring 初始化完成，以便上线时，能及早发现问题，默认
+check=true。
+通过 check="false"关闭检查，比如，测试时，有些服务不关心，或者出现了循环依赖，必须有一方先启动。
+
+例 1：关闭某个服务的启动时检查
+
+`<dubbo:reference interface="com.foo.BarService" check="false" />`
+
+例 2：关闭注册中心启动时检查
+
+`<dubbo:registry check="false" />`
+
+默认启动服务时检查注册中心存在并已运行。注册中心不启动会报错。
+
+## 4.3 重试次数
+
+消费者访问提供者，如果访问失败，则切换重试访问其它服务器，但重试会带来更长延迟。
+访问时间变长，用户的体验较差。多次重新访问服务器有可能访问成功。
+可通过 retries="2" 来设置重试次数(不含第一次)。
+
+重试次数配置如下：
+
+        `<dubbo:service retries="2" />`
+        或
+        `<dubbo:reference retries="2" />`
+
+## 4.4 超时时间
+
+由于网络或服务端不可靠，会导致调用出现一种不确定的中间状态（超时）。
+为了避免超时导致客户端资源（线程）挂起耗尽，必须设置超时时间。
+
+timeout：调用远程服务超时时间(毫秒)
+
+`<dubbo:reference interface="com.foo.BarService" timeout="2000" />`
+`<dubbo:server interface="com.foo.BarService" timeout="2000" />`
+
+## 4.5 版本号
+
+每个接口都应定义版本号，为后续不兼容升级提供可能。当一个接口有不同的实现，项目早期使用的一个实现类，
+之后创建接口的新的实现类。区分不同的接口实现使用 version。特别是项目需要把早期接口的实现全部换位新的实现类，也需要使用
+version.
+
+可以用版本号从早期的接口实现过渡到新的接口实现，版本号不同的服务相互间不引用。可以按照以下的步骤进行版本迁移：
+在低压力时间段，先升级一半提供者为新版本，再将所有消费者升级为新版本
+
+# 第五章、监控中心 dubbo-admin
+
+# 5.1 什么是监控中心
+
+dubbo 的使用，其实只需要有注册中心，消费者，提供者这三个就可以使用了，但是并不能看到有哪些消费者和提供者，为了更好的调试，发现问题，解决问题，因此引入
+dubbo-admin。通过 dubbo-admin 可以对消费者和提供者进行管理。可以在 dubbo 应用部署做动态的调整， 服务的管理。
+
+dubbo-admin:
+图形化的服务管理页面；安装时需要指定注册中心地址，即可从注册中心中获取到所有的提供者/消费者进行配置管理
+
+
+# 5.2 发布配置中心
+
+A、下载监控中心，https://github.com/apache/incubator-dubbo-ops
+
+B、运行管理后台 dubbo-admin
+
+到 dubbo-admin-0.0.1-SNAPSHOT.jar 所在的目录。执行下面命令
+
+`java -jar dubbo-admin-0.0.1-SNAPSHOT.jar`
+
+C、修改配置 dubbo-properties 文件
+
+![image.png](https://s2.loli.net/2023/10/29/RtyEIizQPpAJeYs.png)
+
